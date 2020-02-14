@@ -51,6 +51,7 @@ import com.archimatetool.model.IDiagramModelBendpoint;
 import com.archimatetool.model.IDiagramModelConnection;
 import com.archimatetool.model.IFeature;
 import com.archimatetool.model.ILockable;
+import com.archimatetool.model.IProperty;
 import com.archimatetool.model.util.LightweightEContentAdapter;
 
 
@@ -62,7 +63,7 @@ import com.archimatetool.model.util.LightweightEContentAdapter;
  */
 public class DiagramConnectionEditPart extends AbstractConnectionEditPart {
 
-    private Adapter adapter = new LightweightEContentAdapter(this::eCoreChanged, IFeature.class);
+    private Adapter adapter = new LightweightEContentAdapter(this::eCoreChanged, IFeature.class, IProperty.class);
     
     /**
      * Listen to default font change in Prefs
