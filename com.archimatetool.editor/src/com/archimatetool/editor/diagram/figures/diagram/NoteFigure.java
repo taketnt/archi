@@ -23,6 +23,7 @@ import com.archimatetool.editor.diagram.figures.FigureUtils;
 import com.archimatetool.editor.diagram.figures.TextPositionDelegate;
 import com.archimatetool.editor.preferences.IPreferenceConstants;
 import com.archimatetool.editor.preferences.Preferences;
+import com.archimatetool.editor.ui.TextControlRenderer;
 import com.archimatetool.editor.utils.StringUtils;
 import com.archimatetool.model.IDiagramModelNote;
 
@@ -68,7 +69,11 @@ public class NoteFigure extends AbstractDiagramModelObjectFigure {
     @Override
     public void refreshVisuals() {
         // Text
-        setText(getDiagramModelObject().getContent());
+        String text = TextControlRenderer.getDefault().render(getDiagramModelObject());
+        if(!StringUtils.isSet(text)) {
+            text = StringUtils.safeString(getDiagramModelObject().getContent());
+        }
+        setText(text);
         
         // Font
         setFont();
