@@ -17,6 +17,8 @@ import org.eclipse.gef.commands.CompoundCommand;
 import org.eclipse.gef.editpolicies.GraphicalNodeEditPolicy;
 import org.eclipse.gef.requests.CreateConnectionRequest;
 import org.eclipse.gef.requests.ReconnectRequest;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 
 import com.archimatetool.editor.diagram.commands.CreateDiagramArchimateConnectionWithDialogCommand;
 import com.archimatetool.editor.diagram.commands.CreateDiagramConnectionCommand;
@@ -24,6 +26,8 @@ import com.archimatetool.editor.diagram.commands.DiagramCommandFactory;
 import com.archimatetool.editor.diagram.commands.ReconnectDiagramConnectionCommand;
 import com.archimatetool.editor.diagram.figures.ITargetFeedbackFigure;
 import com.archimatetool.editor.model.DiagramModelUtils;
+import com.archimatetool.editor.preferences.IPreferenceConstants;
+import com.archimatetool.editor.preferences.Preferences;
 import com.archimatetool.model.IArchimateConcept;
 import com.archimatetool.model.IArchimatePackage;
 import com.archimatetool.model.IArchimateRelationship;
@@ -140,12 +144,24 @@ public class ArchimateDiagramConnectionPolicy extends GraphicalNodeEditPolicy {
         IArchimateConcept newConcept = dmc.getArchimateConcept();
 
         CompoundCommand cmd = new CompoundCommand() {
+            boolean affectsOtherViews = false;
+            
             @Override
             public void execute() {
                 // Lazily create commands
                 createCommands();
                 
                 super.execute();
+                
+                // Show message that it affected other Viewss
+                if(affectsOtherViews && Preferences.STORE.getBoolean(IPreferenceConstants.SHOW_WARNING_ON_RECONNECT)) {
+                    MessageDialog.openInformation(
+                            Display.getDefault().getActiveShell(),
+                            Messages.ArchimateDiagramConnectionPolicy_0,
+                            Messages.ArchimateDiagramConnectionPolicy_1
+                            + "\n\n" + //$NON-NLS-1$
+                            Messages.ArchimateDiagramConnectionPolicy_2);
+                }
             }
             
             @Override
@@ -180,13 +196,18 @@ public class ArchimateDiagramConnectionPolicy extends GraphicalNodeEditPolicy {
 
                             // If the instance's concept is different than the original concept then reconnect
                             if(isNewConnection(matchingConnection, newComponent, isSourceCommand)) {
-                                add(createReconnectCommand(matchingConnection, newComponent, isSourceCommand));
+                                Command cmd = createReconnectCommand(matchingConnection, newComponent, isSourceCommand);
+                                if(cmd.canExecute()) {
+                                    affectsOtherViews = true;
+                                    add(cmd);
+                                }
                             }
                         }
 
                         // No, so delete the matching connection
                         else {
                             add(DiagramCommandFactory.createDeleteDiagramConnectionCommand(matchingConnection));
+                            affectsOtherViews = true;
                         }
                     }
                 }
