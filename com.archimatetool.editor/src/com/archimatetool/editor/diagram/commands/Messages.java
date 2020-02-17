@@ -29,6 +29,8 @@ public class Messages extends NLS {
 
     public static String CreateBendpointCommand_0;
 
+    public static String CreateDiagramArchimateConnectionWithDialogCommand_0;
+
     public static String CreateDiagramConnectionCommand_0;
 
     public static String CreateDiagramObjectCommand_0;
