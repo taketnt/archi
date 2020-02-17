@@ -13,6 +13,7 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.commands.CompoundCommand;
 import org.eclipse.gef.editpolicies.GraphicalNodeEditPolicy;
 import org.eclipse.gef.requests.CreateConnectionRequest;
@@ -155,12 +156,17 @@ public class ArchimateDiagramConnectionPolicy extends GraphicalNodeEditPolicy {
                 
                 // Show message that it affected other Viewss
                 if(affectsOtherViews && Preferences.STORE.getBoolean(IPreferenceConstants.SHOW_WARNING_ON_RECONNECT)) {
-                    MessageDialog.openInformation(
+                    boolean answer = MessageDialog.openQuestion(
                             Display.getDefault().getActiveShell(),
                             Messages.ArchimateDiagramConnectionPolicy_0,
                             Messages.ArchimateDiagramConnectionPolicy_1
                             + "\n\n" + //$NON-NLS-1$
                             Messages.ArchimateDiagramConnectionPolicy_2);
+                    
+                    if(!answer) {
+                        // We have to call undo() later in the thread as the Command is not yet on the CommandStack
+                        Display.getDefault().asyncExec(() -> ((CommandStack)connection.getAdapter(CommandStack.class)).undo());
+                    }
                 }
             }
             
